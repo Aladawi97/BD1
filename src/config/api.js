@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'http://localhost:5000/api',
+  baseURL: 'https://bd1-bacend.onrender.com/api',  // تم التعديل هنا
   headers: {
     'Content-Type': 'application/json'
   }
