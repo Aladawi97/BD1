@@ -113,15 +113,21 @@ const SliderDot = styled('div')({
 const Hero = () => {
   const [heroImages, setHeroImages] = useState([]);
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [loading, setLoading] = useState(true);  // New state for loading
+  const [error, setError] = useState(null);  // New state for error
 
   useEffect(() => {
     const loadHeroImages = async () => {
       try {
-        const response = await fetch('http://localhost:5000/api/hero-images');
+        // Change the URL to the actual production URL
+        const response = await fetch('https://bd1-bacend.onrender.com/api/hero-images');
         const data = await response.json();
         setHeroImages(data);
       } catch (error) {
-        console.error('Error loading hero images:', error);
+        setError('Error loading hero images: ' + error.message);
+        console.error(error);
+      } finally {
+        setLoading(false);  // Stop loading when the images are fetched or an error occurs
       }
     };
 
@@ -132,35 +138,38 @@ const Hero = () => {
     if (heroImages.length === 0) return;
 
     const interval = setInterval(() => {
-      setCurrentSlide(current => (current + 1) % heroImages.length);
+      setCurrentSlide((current) => (current + 1) % heroImages.length);
     }, 5000);
 
     return () => clearInterval(interval);
   }, [heroImages]);
 
   const handlePrevSlide = () => {
-    setCurrentSlide(current => 
+    setCurrentSlide((current) =>
       current === 0 ? heroImages.length - 1 : current - 1
     );
   };
 
   const handleNextSlide = () => {
-    setCurrentSlide(current => 
-      (current + 1) % heroImages.length
-    );
+    setCurrentSlide((current) => (current + 1) % heroImages.length);
   };
 
+  if (loading) {
+    return <div>Loading...</div>;  // Display loading message if the data is being fetched
+  }
+
+  if (error) {
+    return <div>{error}</div>;  // Display error message if there was an issue loading the images
+  }
+
   if (heroImages.length === 0) {
-    return null;
+    return <div>No hero images available</div>;  // Fallback message if no hero images are returned
   }
 
   return (
     <HeroSection>
       {heroImages.map((image, index) => (
-        <HeroSlide
-          key={image.id}
-          className={index === currentSlide ? 'active' : ''}
-        >
+        <HeroSlide key={image.id} className={index === currentSlide ? 'active' : ''}>
           <HeroImageBackground style={{ backgroundImage: `url(${image.image_url})` }} />
           <HeroImage src={image.image_url} alt="" />
         </HeroSlide>
@@ -184,4 +193,4 @@ const Hero = () => {
   );
 };
 
-export default Hero; 
+export default Hero;
