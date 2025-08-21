@@ -8,6 +8,7 @@ import SpecialOffers from './components/SpecialOffers';
 import Login from './components/Login';
 import Register from './components/Register';
 import Hero from './components/Hero';
+import AddProduct from './components/AddProduct';  // إضافة مكون إضافة المنتج
 import { BrowserRouter as Router, Routes, Route, useNavigate } from 'react-router-dom';
 import Snackbar from '@mui/material/Snackbar';
 
@@ -17,7 +18,6 @@ function App() {
     return saved ? JSON.parse(saved) : [];
   });
   const [isCartOpen, setIsCartOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState('home');
   const [user, setUser] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
@@ -50,7 +50,7 @@ function App() {
     setSelectedProducts([]);
     navigate('/login');
   };
-  
+
   const addToCart = (product) => {
     if (!user) {
       alert('Please log in first');
@@ -62,9 +62,9 @@ function App() {
       if (existingProduct) {
         setSnackbarMsg('تم تحديث الكمية في السلة');
         setSnackbarOpen(true);
-        return prevProducts.map(p => 
-          p.id === product.id 
-            ? { ...p, quantity: (p.quantity || 1) + (product.quantity || 1) } 
+        return prevProducts.map(p =>
+          p.id === product.id
+            ? { ...p, quantity: (p.quantity || 1) + (product.quantity || 1) }
             : p
         );
       }
@@ -74,68 +74,27 @@ function App() {
     });
   };
 
-  const removeFromCart = (productToRemove) => {
-    if (!productToRemove) return;
-    setSelectedProducts(prevProducts => 
-      prevProducts.filter(product => product.id !== productToRemove.id)
-    );
-  };
-
-  const updateCartItem = (updatedItem) => {
-    if (!updatedItem) return;
-    setSelectedProducts(prevProducts => 
-      prevProducts.map(item => 
-        item.id === updatedItem.id ? updatedItem : item
-      )
-    );
-  };
-
-  const handleCloseCart = () => {
-    setIsCartOpen(false);
-  };
-
-  const handleNavigate = (path) => {
-    navigate(path);
-  };
-
   if (isLoading) {
     return <div>Loading...</div>;
   }
 
   return (
     <>
-      <Header 
+      <Header
         selectedProducts={selectedProducts}
-        removeFromCart={removeFromCart}
-        updateCartItem={updateCartItem}
         isCartOpen={isCartOpen}
         setIsCartOpen={setIsCartOpen}
-        onNavigate={handleNavigate}
-        user={user}
         onLogout={handleLogout}
+        user={user}
       />
       <Routes>
-        <Route path="/" element={<><Hero /><main><Products addToCart={addToCart} selectedProducts={selectedProducts} updateCartItem={updateCartItem} removeFromCart={removeFromCart} /></main></>} />
+        <Route path="/" element={<><Hero /><Products addToCart={addToCart} selectedProducts={selectedProducts} /></>} />
         <Route path="/login" element={<Login onLogin={handleLogin} />} />
         <Route path="/register" element={<Register onLogin={handleLogin} />} />
-        <Route path="/special-offers" element={<SpecialOffers addToCart={addToCart} selectedProducts={selectedProducts} setIsCartOpen={setIsCartOpen} />} />
-        <Route path="/offers" element={<SpecialOffers addToCart={addToCart} selectedProducts={selectedProducts} setIsCartOpen={setIsCartOpen} />} />
-        <Route path="/products" element={<Products addToCart={addToCart} selectedProducts={selectedProducts} updateCartItem={updateCartItem} removeFromCart={removeFromCart} />} />
+        <Route path="/special-offers" element={<SpecialOffers addToCart={addToCart} />} />
+        <Route path="/add-product" element={<AddProduct />} />  {/* المسار الخاص بصفحة إضافة المنتج */}
       </Routes>
       <Footer />
-      {isCartOpen && user && (
-        <div className="cart-overlay" onClick={handleCloseCart}>
-          <div onClick={e => e.stopPropagation()}>
-            <Cart 
-              cartItems={selectedProducts}
-              onClose={handleCloseCart}
-              updateCartItem={updateCartItem}
-              removeFromCart={removeFromCart}
-              user={user}
-            />
-          </div>
-        </div>
-      )}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={2000}
@@ -147,12 +106,10 @@ function App() {
   );
 }
 
-function AppWrapper() {
+export default function AppWrapper() {
   return (
     <Router>
       <App />
     </Router>
-  )
+  );
 }
-
-export default AppWrapper; 
